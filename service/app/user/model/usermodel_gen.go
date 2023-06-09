@@ -40,15 +40,16 @@ type (
 	}
 
 	User struct {
-		Id         int64          `db:"id"`                       // 用户ID
-		Password   string         `db:"password"`                 // 用户密码，MD5加密
-		UserNick   string         `db:"user_Nick"`                // 用户昵称
-		UserSex    int64          `db:"User_Sex"`                 // 用户性别：0男，1女，2保密
-		UserEmail  string         `db:"user_Email"`               // 用户邮箱
-		UserPhone  string         `db:"user_Phone"`               // 手机号
-		CreateTime time.Time      `db:"create_time"`              // 创建时间
-		UpdateTime time.Time      `db:"update_time"`              // 更新时间
-		DeleteTime gorm.DeletedAt `gorm:"index" db:"delete_time"` // 删除时间
+		Id         int64          `gorm:"column:id"`               // 用户ID
+		Password   string         `gorm:"column:password"`         // 用户密码，MD5加密
+		UserNick   string         `gorm:"column:user_Nick"`        // 用户昵称
+		UserSex    int64          `gorm:"column:User_Sex"`         // 用户性别：0男，1女，2保密
+		UserEmail  string         `gorm:"column:user_Email"`       // 用户邮箱
+		UserPhone  string         `gorm:"column:user_Phone"`       // 手机号
+		CreateTime time.Time      `gorm:"column:create_time"`      // 创建时间
+		UpdateTime time.Time      `gorm:"column:update_time"`      // 更新时间
+		DeleteTime gorm.DeletedAt `gorm:"index " db:"delete_time"` // 删除时间
+
 	}
 )
 

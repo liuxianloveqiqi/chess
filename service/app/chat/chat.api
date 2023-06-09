@@ -1,0 +1,12 @@
+syntax = "v1"  // 版本号
+
+// 接口信息
+info(
+    title: "chess/chat.api"
+    author: "liuxian"
+    version: "1.0.0"
+)
+type (
+
+
+)
