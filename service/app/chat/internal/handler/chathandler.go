@@ -49,9 +49,15 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	//跨域
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 var h *http.Header
+
+var Hubs = make(map[int64]*Hub)
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
@@ -84,9 +90,12 @@ func chatHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			httpx.Error(w, err)
 			return
 		}
-
-		hub := NewHub(req.RoomId)
-		go hub.Run()
+		hub := Hubs[req.RoomId]
+		if hub == nil {
+			hub = NewHub(req.RoomId)
+			go hub.Run()
+			Hubs[req.RoomId] = hub
+		}
 		h = &r.Header
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -99,8 +108,8 @@ func chatHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			err = errors.New("获取user_id错误")
 		}
 		client := &Client{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256)}
-		client.hub.register <- client
 
+		client.hub.register <- client
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.
 		go client.writePump()
@@ -169,7 +178,14 @@ func (c *Client) readPump() {
 			}
 
 			message = []byte(fmt.Sprintf("userid = %d的用户说：%s", c.id, string(message)))
-			c.hub.broadcast <- message
+			for client := range c.hub.clients {
+				select {
+				case client.send <- message:
+				default:
+					close(client.send)
+					delete(c.hub.clients, client)
+				}
+			}
 			// 更新最后一次消息时间,使用原子操作更新最后发送消息时间防止并发出错
 			atomic.StoreInt64(&c.lastMessageTime, time.Now().Unix())
 		}
@@ -191,13 +207,14 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
+			c.mutex.Lock()
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-
+			c.mutex.Unlock()
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return

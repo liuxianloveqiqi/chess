@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -14,7 +15,6 @@ import (
 type Hub struct {
 	// room id
 	id int64
-
 	// Registered clients.
 	clients map[*Client]bool
 
@@ -23,6 +23,8 @@ type Hub struct {
 
 	// Register requests from the clients.
 	register chan *Client
+
+	systemBroadcast chan []byte
 
 	// Unregister requests from clients.
 	unregister chan *Client
@@ -43,33 +45,35 @@ type Message struct {
 
 func NewHub(id int64) *Hub {
 	return &Hub{
-		id:         id,
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		id:              id,
+		broadcast:       make(chan []byte),
+		systemBroadcast: make(chan []byte),
+		register:        make(chan *Client),
+		unregister:      make(chan *Client),
+		clients:         make(map[*Client]bool),
 	}
 }
-
 func (h *Hub) Run() {
 	for {
 		select {
-
 		case client := <-h.register:
-			// 对h.clients这个map进行写入操作时加锁防止并发
 			h.mutex.Lock()
-			h.clients[client] = true
-			h.mutex.Unlock()
-
-		case client := <-h.unregister:
-			// 同理进行加锁
-			h.mutex.Lock()
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				close(client.send)
+			// 检查是否已经有两位用户
+			if len(h.clients) == 2 {
+				// 如果已经有两位用户，则拒绝新用户连接
+				client.send <- []byte("房间已经满了，无法加入")
+				client.conn.Close()
+			} else {
+				// 否则将新用户添加到客户端列表中，并向其他用户发送通知
+				h.clients[client] = true
+				for c := range h.clients {
+					if c != client {
+						c.send <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
+					}
+				}
+				fmt.Println("客户端的数量为,", len(h.clients))
 			}
-			h.mutex.Lock()
-
+			h.mutex.Unlock()
 		case message := <-h.broadcast:
 			// 同理进行加锁
 			h.mutex.Lock()
