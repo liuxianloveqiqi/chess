@@ -12,7 +12,7 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_ROOT_HOST: '%'
     ports:
-      - "3308:3306"
+      - "8686:3306"
     volumes:
       - ./data/mysql:/var/lib/mysql
 
@@ -20,7 +20,7 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6279:6379"
+      - "6333:6379"
 
 
   nsqlookupd:

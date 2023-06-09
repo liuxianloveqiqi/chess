@@ -1,0 +1,12 @@
+/data/
+*.xml
+*.iml
+/service/*.yaml
+# 忽略依赖包目录
+/vendor/
+
+# 忽略IDE和编辑器的配置文件
+.idea/
+.vscode/
+*.sublime-*
+*.swp
