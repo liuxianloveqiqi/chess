@@ -10,41 +10,44 @@ import (
 	"time"
 )
 
-// Hub maintains the set of active clients and broadcasts messages to the
+// GameHub maintains the set of active clients and broadcasts messages to the
 // clients.
-type Hub struct {
+type GameHub struct {
 	// room id
 	id int64
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[*GameClient]bool
 
 	// Inbound messages from the clients.
 	broadcast chan []byte
 
+	systemBroadcast chan []byte
+
 	// Register requests from the clients.
-	register chan *Client
+	register chan *GameClient
 
 	// Unregister requests from clients.
-	unregister chan *Client
+	unregister chan *GameClient
 
 	// 添加心跳检测
 	heartBeat *time.Ticker
 
-	systemBroadcast chan []byte
 	// 添加互斥锁锁
 	mutex sync.Mutex
 }
 
-func NewHub(id int64) *Hub {
-	return &Hub{
-		id:         id,
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+func NewGameHub(id int64) *GameHub {
+	return &GameHub{
+		id:              id,
+		broadcast:       make(chan []byte),
+		systemBroadcast: make(chan []byte),
+		register:        make(chan *GameClient),
+
+		unregister: make(chan *GameClient),
+		clients:    make(map[*GameClient]bool),
 	}
 }
-func (h *Hub) Run() {
+func (h *GameHub) Run() {
 	for {
 		select {
 		case client := <-h.register:
@@ -52,14 +55,15 @@ func (h *Hub) Run() {
 			// 检查是否已经有两位用户
 			if len(h.clients) == 2 {
 				// 如果已经有两位用户，则拒绝新用户连接
-				client.send <- []byte("房间已经满了，无法加入")
+				h.systemBroadcast <- []byte("系统：游戏房间已经满了，无法加入")
 				client.conn.Close()
 			} else {
 				// 否则将新用户添加到客户端列表中，并向其他用户发送通知
 				h.clients[client] = true
 				for c := range h.clients {
 					if c != client {
-						c.send <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
+						h.systemBroadcast <- []byte(fmt.Sprintf("系统：一个新用户加入了游戏房间: %v 号", h.id))
+						h.systemBroadcast <- []byte("系统：请输入 start 准备开始游戏")
 					}
 				}
 				fmt.Println("客户端的数量为,", len(h.clients))
@@ -72,6 +76,18 @@ func (h *Hub) Run() {
 				select {
 				case client.send <- message:
 
+				default:
+					close(client.send)
+					delete(h.clients, client)
+				}
+			}
+			h.mutex.Unlock()
+
+		case systemMessage := <-h.systemBroadcast:
+			h.mutex.Lock()
+			for client := range h.clients {
+				select {
+				case client.send <- systemMessage:
 				default:
 					close(client.send)
 					delete(h.clients, client)
