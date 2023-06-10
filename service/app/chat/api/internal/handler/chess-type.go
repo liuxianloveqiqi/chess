@@ -1,5 +1,7 @@
 package handler
 
+import "math"
+
 // 棋子
 type Piece byte
 
@@ -18,16 +20,16 @@ func (p Piece) Flip() Piece {
 	return map[Piece]Piece{'P': 'p', 'N': 'n', 'B': 'b', 'R': 'r', 'Q': 'q', 'K': 'k', 'p': 'P', 'n': 'N', 'b': 'B', 'r': 'R', 'q': 'Q', 'k': 'K', ' ': ' ', '.': '.'}[p]
 }
 
-type Board [120]Piece
+type Board [64]Piece
 
 // 打印棋盘
 func (a Board) String() string {
 	s := ""
 	s += " -----------------\n"
-	for row := 2; row < 10; row++ {
-		s += string('a'+row-2) + "|"
-		for col := 1; col < 9; col++ {
-			s += " " + string(a[row*10+col])
+	for row := 0; row < 8; row++ {
+		s += string('a'+row) + "|"
+		for col := 0; col < 8; col++ {
+			s += " " + string(a[row*8+col])
 		}
 		s += " |\n"
 	}
@@ -68,15 +70,15 @@ func (a Board) Flip() (b Board) {
 type Square int
 
 // 棋盘上的四个角的位置
-const A1, H1, A8, H8 Square = 91, 98, 21, 28
+const A1, H1, A8, H8 Square = 0, 7, 56, 63
 
 func (s Square) Flip() Square {
-	return 119 - s
+	return 63 - s
 }
 
 // 位置转换为类似 "a1"、"b2" 的字符串形式
 func (s Square) String() string {
-	return string([]byte{" abcdefgh "[s%10], "  87654321  "[s/10]})
+	return string([]byte{" abcdefgh "[s%8], "  87654321  "[s/8]})
 }
 
 // 移动
@@ -90,7 +92,7 @@ func (m Move) String() string {
 	return m.from.String() + m.to.String()
 }
 
-// 位置
+// 棋局状态
 type State struct {
 	board Board   // 棋盘
 	score int     // 当前棋盘位置的得分
@@ -102,19 +104,19 @@ type State struct {
 
 // 翻转
 func (s State) Flip() State {
-	np := State{
+	newState := State{
 		score: -s.score,
 		wc:    [2]bool{s.bc[0], s.bc[1]},
 		bc:    [2]bool{s.wc[0], s.wc[1]},
 		ep:    s.ep.Flip(),
 		kp:    s.kp.Flip(),
 	}
-	np.board = s.board.Flip()
-	return np
+	newState.board = s.board.Flip()
+	return newState
 }
 
 // 上下左右
-const W, D, S, A = -10, 1, 10, -1
+const W, D, S, A = 8, 1, -8, -1
 
 func (s State) Moves() (moves []Move) {
 	// 所以棋子可以走的步
@@ -152,25 +154,99 @@ func (s State) Moves() (moves []Move) {
 					if d == W+W && (i < A1+W || s.board[i+W] != '.') {
 						break
 					}
-
+					// 兵左右上方没棋子，不是吃过路兵的位置，不是吃易位王的位置
 					if (d == W+A || d == W+D) && q == '.' && (j != s.ep && j != s.kp && j != s.kp-1 && j != s.kp+1) {
 						break
 					}
 				}
+				// 添加合法步
 				moves = append(moves, Move{from: i, to: j})
-				// Crawling pieces should stop after a single move
-				if p == 'P' || p == 'N' || p == 'K' || (q != ' ' && q != '.' && !q.me()) {
+				// 不能越过对方的棋子
+				if p == 'P' || p == 'N' || p == 'K' || (q != '.' && !q.me()) {
 					break
 				}
-				// Castling rules
+				// 判断白方王车易位
+				// 短易位
 				if i == A1 && s.board[j+D] == 'K' && s.wc[0] {
 					moves = append(moves, Move{from: j + D, to: j + A})
 				}
+				// 长易位
 				if i == H1 && s.board[j+A] == 'K' && s.wc[1] {
+					moves = append(moves, Move{from: j + A, to: j + D})
+				}
+				// 判断黑方王车易位
+				if i == A1 && s.board[j+D] == 'K' && s.bc[0] {
+					moves = append(moves, Move{from: j + D, to: j + A})
+				}
+				if i == H1 && s.board[j+A] == 'K' && s.bc[1] {
 					moves = append(moves, Move{from: j + A, to: j + D})
 				}
 			}
 		}
 	}
 	return moves
+}
+
+func (s State) Move(m Move) (newState State) {
+	// 初始化
+	i, j, p := m.from, m.to, s.board[m.from]
+	newState = s
+	newState.ep = 0
+	newState.kp = 0
+	// 棋子易位
+	newState.board[m.to] = s.board[m.from]
+	newState.board[m.from] = '.'
+	// 王车易位，车在角上就判断可以进行易位
+	newState.wc[0] = newState.wc[0] || (i == A1)
+	newState.wc[1] = newState.wc[1] || (i == H1)
+	newState.bc[1] = newState.bc[1] || (j == A8)
+	newState.bc[0] = newState.bc[0] || (j == H8)
+
+	if p == 'K' {
+		// 移动王就否定易位条件
+		newState.wc[0], newState.wc[1] = false, false
+		// 差两步判断为王车易位
+		if abs(int(j-i)) == 2 {
+			if j > i {
+				// 王向右移动，进行短易位
+				if s.board[H1+A] == '.' && s.board[H1+A+A] == '.' {
+					newState.board[H1] = '.'
+				}
+			} else {
+				// 王向左移动，进行长易位
+				if s.board[A1+D] == '.' && s.board[A1+D+D] == '.' && s.board[A1+D+D+D] == '.' {
+					newState.board[H1] = '.'
+				}
+			}
+			newState.board[(i+j)/2] = 'R'
+		}
+	}
+	if p == 'P' {
+		// 判断是否双步起步
+		if j-i == 2*S {
+			newState.ep = i + S
+		}
+
+		// 判断是否能吃过路兵
+		if j == s.ep {
+			newState.board[j+S] = '.'
+		}
+		// 兵升后
+		if A8 <= j && j <= H8 {
+			newState.board[j] = 'Q'
+		}
+
+	}
+	for _, p := range s.board {
+		if !p.me() {
+			continue
+		} else {
+			newState.score += p.value()
+		}
+	}
+	return newState.Flip()
+}
+
+func abs(v int) int {
+	return int(math.Abs(float64(v)))
 }

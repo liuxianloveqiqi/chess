@@ -39,8 +39,8 @@ func (c *GameClient) processInput(input []byte) []byte {
 		output.WriteString(fmt.Sprintln(pos.Flip().board))
 		m := searcher.Search(pos, 10000)
 		score := pos.value(m)
-		if score <= -MateValue {
-			output.WriteString("你赢了\n")
+		if score < 1000{
+			output.WriteString("你输了\n")
 			return output.Bytes()
 		}
 		if score >= MateValue {
@@ -50,5 +50,4 @@ func (c *GameClient) processInput(input []byte) []byte {
 		pos = pos.Move(m)
 	}
 }
-	return nil
 }
