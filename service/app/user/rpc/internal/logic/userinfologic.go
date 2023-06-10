@@ -1,13 +1,12 @@
 package logic
 
 import (
-	"chess/service/app/user/model"
 	"context"
 	"errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"chess/service/app/user/rpc/internal/svc"
-	"chess/service/app/user/rpc/types/user"
+	"user/model"
+	"user/rpc/internal/svc"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

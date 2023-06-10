@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"chess/service/app/user/api/internal/logic"
-	"chess/service/app/user/api/internal/svc"
-	"chess/service/app/user/api/internal/types"
-	"chess/service/common/response"
 	"github.com/zeromicro/go-zero/rest/httpx"
 	"net/http"
+	"user/api/internal/logic"
+	"user/api/internal/svc"
+	"user/api/internal/types"
+	"user/common/response"
 )
 
 func userInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

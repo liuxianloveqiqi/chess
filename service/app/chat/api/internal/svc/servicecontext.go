@@ -1,8 +1,8 @@
 package svc
 
 import (
-	"chess/service/app/chat/internal/config"
-	"chess/service/app/chat/internal/middleware"
+	"chat/api/internal/config"
+	"chat/api/internal/middleware"
 	"github.com/zeromicro/go-zero/rest"
 )
 

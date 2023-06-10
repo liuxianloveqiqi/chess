@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"chess/service/common/utils"
+	"chat/common/utils"
 	"context"
 	"encoding/json"
 	"fmt"

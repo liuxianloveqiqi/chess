@@ -1,27 +1,29 @@
 package logic
 
 import (
-	"chess/service/app/chat/internal/svc"
-	"chess/service/app/chat/internal/types"
 	"context"
+
+	"chat/api/internal/svc"
+	"chat/api/internal/types"
+
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type ChatLogic struct {
+type GameLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewChatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChatLogic {
-	return &ChatLogic{
+func NewGameLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GameLogic {
+	return &GameLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *ChatLogic) Chat(req *types.JoinRoomReq) error {
+func (l *GameLogic) Game(req *types.JoinRoomReq) error {
 	// todo: add your logic here and delete this line
 
 	return nil

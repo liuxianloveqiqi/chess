@@ -1,19 +1,18 @@
 package main
 
 import (
-	"chess/service/common/errorx"
-	"chess/service/common/logs/zapx"
 	"context"
 	"flag"
 	"fmt"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 	"net/http"
-
-	"chess/service/app/user/rpc/internal/config"
-	"chess/service/app/user/rpc/internal/server"
-	"chess/service/app/user/rpc/internal/svc"
-	"chess/service/app/user/rpc/types/user"
+	"user/common/errorx"
+	"user/common/logs/zapx"
+	"user/rpc/internal/config"
+	"user/rpc/internal/server"
+	"user/rpc/internal/svc"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

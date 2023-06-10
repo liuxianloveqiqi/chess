@@ -2,10 +2,11 @@ package handler
 
 import (
 	"bytes"
-	"chess/service/app/chat/internal/logic"
-	"chess/service/app/chat/internal/svc"
-	"chess/service/app/chat/internal/types"
-	"chess/service/common/response"
+	"chat/api/internal/logic"
+	"chat/api/internal/svc"
+	"chat/api/internal/types"
+	"chat/common/response"
+
 	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -81,6 +82,8 @@ type Client struct {
 
 	//敏感词列表
 	sensitiveWords []string
+
+	isReady bool // 标识客户端是否已准备好开始游戏
 }
 
 func chatHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

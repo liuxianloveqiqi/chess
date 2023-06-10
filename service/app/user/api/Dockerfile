@@ -14,8 +14,8 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-COPY service/app/user/api/etc /app/etc
-RUN go build -ldflags="-s -w" -o /app/user service/app/user/api/user.go
+COPY api/etc /app/etc
+RUN go build -ldflags="-s -w" -o /app/user api/user.go
 
 
 FROM scratch

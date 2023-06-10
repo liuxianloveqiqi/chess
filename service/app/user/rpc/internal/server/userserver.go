@@ -5,10 +5,9 @@ package server
 
 import (
 	"context"
-
-	"chess/service/app/user/rpc/internal/logic"
-	"chess/service/app/user/rpc/internal/svc"
-	"chess/service/app/user/rpc/types/user"
+	"user/rpc/internal/logic"
+	"user/rpc/internal/svc"
+	"user/rpc/types/user"
 )
 
 type UserServer struct {

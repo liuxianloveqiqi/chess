@@ -2,8 +2,9 @@
 package handler
 
 import (
-	"chess/service/app/chat/internal/svc"
 	"net/http"
+
+	"chat/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -17,6 +18,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodGet,
 					Path:    "/room",
 					Handler: chatHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/room/game",
+					Handler: gameHandler(serverCtx),
 				},
 			}...,
 		),

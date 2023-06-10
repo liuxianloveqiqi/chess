@@ -1,49 +1,39 @@
-version: '3'
+version: '3.5'
+# 网络配置
+networks:
+  chess:
+    driver: bridge
+
+# 服务容器配置
 services:
-  etcd:
-    image: quay.io/coreos/etcd:latest
-    command: etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://0.0.0.0:2379
-    ports:
-      - "2379:2379"
-  mysql:
-    image: mysql:latest
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_ROOT_HOST: '%'
-    ports:
-      - "8686:3306"
-    volumes:
-      - ./data/mysql:/var/lib/mysql
 
-  redis:
-    image: redis:latest
-    restart: always
-    ports:
-      - "6333:6379"
+  user-rpc: # 自定义容器名称
+    build:
+      context: service/app/user              # 指定构建使用的 Dockerfile 文件
+      dockerfile: rpc/Dockerfile
+    environment: # 设置环境变量
+      - TZ=Asia/Shanghai
+    privileged: true
+    ports: # 设置端口映射
+      - "4002:4002"  # user服务rpc端口
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    networks:
+      - chess
+    restart: always                      # 指定容器退出后的重启策略为始终重启
 
-
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
-    ports:
-      - "4160:4160" # tcp
-      - "4161:4161" # http
-
-  nsqd:
-    image: nsqio/nsq
-    # 广播地址不填的话默认就是oshostname(或虚拟机名称)，那样 lookupd 会连接不上，所以直接写IP
-    command: /nsqd --broadcast-address=127.0.0.1 --lookupd-tcp-address=nsqlookupd:4160
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4150:4150" # tcp
-      - "4151:4151" # http
-
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4171:4171" # http
+  user-api: # 自定义容器名称
+    build:
+      context: service/app/user               # 指定构建使用的 Dockerfile 文件
+      dockerfile: api/Dockerfile
+    environment: # 设置环境变量
+      - TZ=Asia/Shanghai
+    privileged: true
+    ports: # 设置端口映射
+      - "4001:4001"  # user服务api端口
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    networks:
+      - chess
+    restart: always                      # 指定容器退出后的重启策略为始终重启
+  

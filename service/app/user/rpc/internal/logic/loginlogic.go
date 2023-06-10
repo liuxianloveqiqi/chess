@@ -1,14 +1,13 @@
 package logic
 
 import (
-	"chess/service/app/user/model"
-	"chess/service/common/errorx"
-	"chess/service/common/utils"
 	"context"
 	"errors"
-
-	"chess/service/app/user/rpc/internal/svc"
-	"chess/service/app/user/rpc/types/user"
+	"user/common/errorx"
+	"user/common/utils"
+	"user/model"
+	"user/rpc/internal/svc"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

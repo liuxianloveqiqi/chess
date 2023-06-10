@@ -1,15 +1,14 @@
 package logic
 
 import (
-	"chess/service/app/user/rpc/types/user"
-	"chess/service/common/errorx"
-	"chess/service/common/utils"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
-
-	"chess/service/app/user/api/internal/svc"
-	"chess/service/app/user/api/internal/types"
+	"user/api/internal/svc"
+	"user/api/internal/types"
+	"user/common/errorx"
+	"user/common/utils"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

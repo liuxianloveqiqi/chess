@@ -5,8 +5,7 @@ package userclient
 
 import (
 	"context"
-
-	"chess/service/app/user/rpc/types/user"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

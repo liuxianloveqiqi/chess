@@ -1,11 +1,11 @@
 package logic
 
 import (
-	"chess/service/app/user/api/internal/svc"
-	"chess/service/app/user/api/internal/types"
-	"chess/service/app/user/rpc/types/user"
-	"chess/service/common/errorx"
 	"context"
+	"user/api/internal/svc"
+	"user/api/internal/types"
+	"user/common/errorx"
+	"user/rpc/types/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

@@ -1,12 +1,12 @@
 package svc
 
 import (
-	"chess/service/app/user/model"
-	"chess/service/app/user/rpc/internal/config"
-	"chess/service/common/init_db"
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"gorm.io/gorm"
+	"user/common/init_db"
+	"user/model"
+	"user/rpc/internal/config"
 )
 
 type ServiceContext struct {

@@ -24,8 +24,6 @@ type Hub struct {
 	// Register requests from the clients.
 	register chan *Client
 
-	systemBroadcast chan []byte
-
 	// Unregister requests from clients.
 	unregister chan *Client
 
@@ -36,21 +34,13 @@ type Hub struct {
 	mutex sync.Mutex
 }
 
-type Message struct {
-	client  *Client
-	typeS   string //类型
-	content []byte
-	created time.Time
-}
-
 func NewHub(id int64) *Hub {
 	return &Hub{
-		id:              id,
-		broadcast:       make(chan []byte),
-		systemBroadcast: make(chan []byte),
-		register:        make(chan *Client),
-		unregister:      make(chan *Client),
-		clients:         make(map[*Client]bool),
+		id:         id,
+		broadcast:  make(chan []byte),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		clients:    make(map[*Client]bool),
 	}
 }
 func (h *Hub) Run() {

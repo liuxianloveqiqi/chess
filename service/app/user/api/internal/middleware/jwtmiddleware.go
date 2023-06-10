@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"chess/service/common/utils"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"user/common/utils"
 )
 
 type JWTMiddleware struct {
