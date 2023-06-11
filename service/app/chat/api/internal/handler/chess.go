@@ -7,7 +7,9 @@ import (
 
 func (c *GameClient) processInput(input string) []byte {
 	var res []byte
-
+	if bout%2 == 1 {
+		return []byte(fmt.Sprintf("现在不是%v的回合，请等待对方走完", c.hub.stringWhiteOrBlack(c.isWhite)))
+	}
 	// 去除输入字符串首尾的空白字符。
 	input = strings.TrimSpace(input)
 
@@ -21,6 +23,7 @@ func (c *GameClient) processInput(input string) []byte {
 			// 如果输入的移动有效，则更新当前位置为移动后的位置
 			state = state.Move(m)
 			res = []byte(state.board.String())
+			bout++
 			if state.score < 1000 {
 				res = []byte(fmt.Sprintf("%v 输了，游戏结束", c.hub.stringWhiteOrBlack(c.isWhite)))
 			}
