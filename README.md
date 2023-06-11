@@ -26,7 +26,7 @@
 
 * docker部署
 
-将user的api和rpc和chat的api打成dockerfile，然后docker-compose启动三个服务分别暴露4001，4002，4003端口
+将user的api和rpc和chat的api打成dockerfile，上传到docker hub然后服务器拉镜像，docker-compose启动三个服务分别暴露4001，4002，4003端口
 
 ![image-20230611212453019](https://raw.githubusercontent.com/liuxianloveqiqi/Xian-imagehost/main/image/image-20230611212453019.png)
 
@@ -39,6 +39,10 @@
 * 象棋
 
 ![image-20230611212756750](https://raw.githubusercontent.com/liuxianloveqiqi/Xian-imagehost/main/image/image-20230611212756750.png)
+
+双方都要输入start后游戏开始，自动分配黑白方，轮流下棋
+
+操作就是a6a7这种，将a6的棋子移动到a7
 
 象棋的地方有bug，de了半天也没de出来，就是用户输入命令后没给返回了，是Move那里出了问题，最后也没解决问题，虽然我感觉我逻辑部分处理没了，但就是没返回也不知道错哪里了
 
