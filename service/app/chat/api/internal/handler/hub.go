@@ -30,7 +30,6 @@ type Hub struct {
 	// 添加心跳检测
 	heartBeat *time.Ticker
 
-	systemBroadcast chan []byte
 	// 添加互斥锁锁
 	mutex sync.Mutex
 }
@@ -59,7 +58,7 @@ func (h *Hub) Run() {
 				h.clients[client] = true
 				for c := range h.clients {
 					if c != client {
-						c.send <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
+						c.hub.broadcast <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
 					}
 				}
 				fmt.Println("客户端的数量为,", len(h.clients))

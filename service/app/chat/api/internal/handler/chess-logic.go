@@ -1,6 +1,6 @@
 package handler
 
-func NewInitialBoard(isBlack bool) Board {
+func NewInitialBoard(isWhite bool) Board {
 	board := Board{
 		'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
 		'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
@@ -12,7 +12,7 @@ func NewInitialBoard(isBlack bool) Board {
 		'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',
 	}
 
-	if isBlack {
+	if !isWhite {
 		return board.Flip()
 	}
 

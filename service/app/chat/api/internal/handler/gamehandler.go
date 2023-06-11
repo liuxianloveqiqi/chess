@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
+	"math/rand"
 	"strconv"
 	"sync/atomic"
 
@@ -22,6 +23,8 @@ import (
 var h0 *http.Header
 
 var GameHubs = make(map[int64]*GameHub)
+
+var bout int
 
 // GameClient is a middleman between the websocket connection and the GameHub.
 type GameClient struct {
@@ -36,8 +39,11 @@ type GameClient struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 	// 互斥锁
-	mutex   sync.Mutex
-	isReady bool // 标识客户端是否已准备好开始游戏
+	mutex       sync.Mutex
+	isReady     bool // 标识客户端是否已准备好开始游戏
+	gameStarted bool // 游戏是否开始
+	// 黑白方
+	isWhite bool
 }
 
 func gameHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
@@ -67,6 +73,8 @@ func gameHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		client := &GameClient{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256), isReady: false}
 
 		client.hub.register <- client
+		// 定黑白
+		bout = hub.WhiteOrBlack()
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.
 		go client.writePump()
@@ -143,35 +151,41 @@ func (c *GameClient) readPump() {
 				}
 				break
 			}
-			userMessage := []byte(fmt.Sprintf("userid = %d的用户操作：%s", c.id, string(message)))
-			for client := range c.hub.clients {
-				select {
-				case client.send <- userMessage:
-				default:
-					close(client.send)
-					delete(c.hub.clients, client)
-				}
-			}
+
 			c.mutex.Lock()
 
-			// 处理用户输入的消息并获取引擎的响应消息
-			input := c.processInput(message)
-
-			// 将引擎的响应消息发送给客户端
-			c.hub.broadcast <- input
-			// 更新最后一次消息时间,使用原子操作更新最后发送消息时间防止并发出错
-			atomic.StoreInt64(&c.lastMessageTime, time.Now().Unix())
-			// 判断两个客户端是否都已准备好开始游戏
-			if c.hub.areBothClientsReady() {
-				fmt.Println("检测是否开始游戏", c.isReady)
-				// 发送游戏开始的消息给两个客户端
-				systemMessage := []byte("系统：游戏开始!")
-				c.hub.systemBroadcast <- systemMessage
+			if string(message) == "start" {
+				c.isReady = true
+				if c.hub.areBothClientsReady() && !c.gameStarted {
+					// 判断黑白方
+					c.isWhite = (bout % 2) == 1
+					c.hub.systemBroadcast <- []byte("系统：游戏开始")
+					c.hub.systemBroadcast <- []byte(fmt.Sprintf("user id为%v的用户为%v", c.id, c.hub.stringWhiteOrBlack(c.isWhite)))
+					c.gameStarted = true
+				}
 			}
+
+			if !c.hub.areBothClientsReady() {
+				c.send <- []byte("系统：请输入start开始！")
+			} else {
+				userMessage := []byte(fmt.Sprintf("userid = %d的用户操作：%s", c.id, string(message)))
+				c.hub.systemBroadcast <- userMessage
+
+				// 处理用户输入的消息并获取引擎的响应消息
+				input := c.processInput(message)
+
+				// 将引擎的响应消息发送给客户端
+				c.send <- input
+
+				// 更新最后一次消息时间,使用原子操作更新最后发送消息时间防止并发出错
+				atomic.StoreInt64(&c.lastMessageTime, time.Now().Unix())
+			}
+
 			c.mutex.Unlock()
 		}
 	}
 }
+
 func (c *GameClient) writePump() {
 
 	ticker := time.NewTicker(pingPeriod)
@@ -225,4 +239,14 @@ func (h *GameHub) areBothClientsReady() bool {
 		}
 	}
 	return true
+}
+
+func (h *GameHub) WhiteOrBlack() int {
+	rand.Seed(time.Now().UnixNano())
+	bout = rand.Intn(100000000)
+	return bout % 2
+}
+
+func (h *GameHub) stringWhiteOrBlack(is bool) string {
+	return map[bool]string{true: "白方", false: "黑方"}[is]
 }

@@ -17,10 +17,7 @@ type GameHub struct {
 	id int64
 	// Registered clients.
 	clients map[*GameClient]bool
-
-	// Inbound messages from the clients.
-	broadcast chan []byte
-
+	// 系统消息
 	systemBroadcast chan []byte
 
 	// Register requests from the clients.
@@ -39,7 +36,6 @@ type GameHub struct {
 func NewGameHub(id int64) *GameHub {
 	return &GameHub{
 		id:              id,
-		broadcast:       make(chan []byte),
 		systemBroadcast: make(chan []byte),
 		register:        make(chan *GameClient),
 
@@ -67,19 +63,6 @@ func (h *GameHub) Run() {
 					}
 				}
 				fmt.Println("客户端的数量为,", len(h.clients))
-			}
-			h.mutex.Unlock()
-		case message := <-h.broadcast:
-			// 同理进行加锁
-			h.mutex.Lock()
-			for client := range h.clients {
-				select {
-				case client.send <- message:
-
-				default:
-					close(client.send)
-					delete(h.clients, client)
-				}
 			}
 			h.mutex.Unlock()
 

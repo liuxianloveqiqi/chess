@@ -1,13 +1,6 @@
 package handler
 
-import (
-	"bufio"
-	"bytes"
-	"fmt"
-	"strings"
-)
-
 func (c *GameClient) processInput(input []byte) []byte {
 
-}
+	return []byte("引擎返回的消息")
 }
