@@ -123,7 +123,6 @@ const W, D, S, A = 8, 1, -8, -1
 
 func (s State) Moves() (moves []Move) {
 	// 所以棋子可以走的步
-	fmt.Println("傻逼吧日")
 	directions := map[Piece][]Square{
 		'P': {W, W + W, W + A, W + D},
 		'N': {W + W + D, D + W + D, D + S + D, S + S + D, S + S + A, A + S + A, A + W + A, W + W + A},

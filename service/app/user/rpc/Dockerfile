@@ -15,7 +15,7 @@ ADD go.sum .
 RUN go mod download
 COPY . .
 COPY rpc/etc /app/etc
-RUN go build -ldflags="-s -w" -o /app/user rpc/user.go
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /app/user rpc/user.go
 
 
 FROM scratch
