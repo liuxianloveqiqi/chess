@@ -24,7 +24,7 @@ import (
 
 const (
 	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
+	writeWait = 10 * time.Minute
 
 	// Time allowed to read the next pong message from the peer.
 	pongWait = 60 * time.Second
@@ -39,7 +39,7 @@ const (
 	heartBeatPeriod = 10 * time.Second
 
 	// 最大等待时间
-	maxWaitTime = 60 * time.Second
+	maxWaitTime = 10 * time.Minute
 )
 
 var (

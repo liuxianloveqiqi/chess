@@ -63,8 +63,6 @@ func (h *GameHub) Run() {
 			}
 			h.mutex.Unlock()
 		case message := <-h.systemBroadcast:
-			// 同理进行加锁
-			h.mutex.Lock()
 			for client := range h.clients {
 				select {
 				case client.send <- message:
@@ -74,7 +72,7 @@ func (h *GameHub) Run() {
 					delete(h.clients, client)
 				}
 			}
-			h.mutex.Unlock()
+
 		}
 	}
 }

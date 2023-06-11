@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"math/rand"
 	"strconv"
 	"sync/atomic"
 
@@ -23,8 +22,6 @@ import (
 var h0 *http.Header
 
 var GameHubs = make(map[int64]*GameHub)
-
-var bout int
 
 var state State
 
@@ -44,6 +41,7 @@ type GameClient struct {
 	mutex       sync.Mutex
 	isReady     bool // 标识客户端是否已准备好开始游戏
 	gameStarted bool // 游戏是否开始
+	isBout      bool // 判断是否是自己回合
 	// 黑白方
 	isWhite bool
 }
@@ -68,14 +66,14 @@ func gameHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			return
 		}
 		userID := r.Context().Value("user_id")
+		fmt.Println("useri id ssss", userID)
 		if userID == nil {
 			logx.Error("获取user_id错误")
 			err = errors.New("获取user_id错误")
 		}
-		client := &GameClient{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256), isReady: false}
+		client := &GameClient{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256), isReady: false, isWhite: false, isBout: false}
 		client.hub.register <- client
-		// 定黑白
-		bout = hub.WhiteOrBlack()
+
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.
 		go client.writePump()
@@ -136,13 +134,16 @@ func (c *GameClient) readPump() {
 		select {
 		// 每10秒触发
 		case <-c.hub.heartBeat.C:
+			c.mutex.Lock() // 加锁
 			// 检测心跳，执行重连
 			err := c.conn.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
 				log.Printf("发送消息错误: %v", err)
 				c.reconnect()
+				c.mutex.Unlock() // 解锁
 				return
 			}
+			c.mutex.Unlock() // 解锁
 
 		default:
 			_, message, err := c.conn.ReadMessage()
@@ -159,19 +160,29 @@ func (c *GameClient) readPump() {
 			if string(message) == "start" {
 				c.isReady = true
 				if c.hub.areBothClientsReady() && !c.gameStarted {
-					// 判断黑白方
-					c.isWhite = (bout % 2) == 1
+
 					c.hub.systemBroadcast <- []byte("系统：游戏开始\n")
+					// 定黑白 1白0黑
+					c.hub.mutex.Lock()
+					for client, _ := range c.hub.clients {
+						client.isWhite = true
+						client.isBout = true
+						fmt.Println(client.id, client.isWhite, client.isBout)
+						break
+
+					}
+					c.hub.mutex.Unlock()
+					fmt.Println("现在的客户端的数量", len(c.hub.clients))
+					fmt.Println(c.hub.clients)
 					c.hub.systemBroadcast <- []byte(fmt.Sprintf("user id为%v的用户为%v\n", c.id, c.hub.stringWhiteOrBlack(c.isWhite)))
 					c.gameStarted = true
 					state = c.NewInitialBoard(c.isWhite)
 					c.hub.systemBroadcast <- []byte(state.board.String())
 				}
-			}
-
-			if !c.hub.areBothClientsReady() && c.isReady {
+			} else if !c.hub.areBothClientsReady() && c.isReady {
 				c.send <- []byte("系统：请等待对方开始")
 			} else {
+				fmt.Println("nnnnnnnnnn")
 				userMessage := []byte(fmt.Sprintf("userid = %d的用户操作：%s", c.id, string(message)))
 				c.hub.systemBroadcast <- userMessage
 
@@ -179,13 +190,12 @@ func (c *GameClient) readPump() {
 				input := c.processInput(string(message))
 
 				// 将引擎的响应消息发送给客户端
-				c.send <- input
+				c.hub.systemBroadcast <- input
 
 				// 更新最后一次消息时间,使用原子操作更新最后发送消息时间防止并发出错
 				atomic.StoreInt64(&c.lastMessageTime, time.Now().Unix())
 			}
 
-			c.mutex.Unlock()
 		}
 	}
 }
@@ -200,18 +210,18 @@ func (c *GameClient) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.mutex.Lock() // 加锁
+
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				c.mutex.Unlock() // 解锁
+
 				return
 			}
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				c.mutex.Unlock() // 解锁
+
 				return
 			}
 
@@ -225,10 +235,9 @@ func (c *GameClient) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
-				c.mutex.Unlock() // 解锁
+
 				return
 			}
-			c.mutex.Unlock() // 解锁
 
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
@@ -250,10 +259,8 @@ func (h *GameHub) areBothClientsReady() bool {
 	return true
 }
 
-func (h *GameHub) WhiteOrBlack() int {
-	rand.Seed(time.Now().UnixNano())
-	bout = rand.Intn(100000000)
-	return bout % 2
+func WhiteOrBlack() int {
+	return 89089353 % 2
 }
 
 func (h *GameHub) stringWhiteOrBlack(is bool) string {

@@ -17,3 +17,6 @@
 ![image-20230609205757771](https://raw.githubusercontent.com/liuxianloveqiqi/Xian-imagehost/main/image/image-20230609205757771.png)
 
 这里重连的时候要带jwt，不然连不上
+
+* docker部署
+

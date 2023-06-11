@@ -1,8 +1,8 @@
 goctl model mysql ddl -src like.sql -dir . -c
 goctl api go -api chat.api -dir .
 goctl rpc protoc like.proto --go_out=./types --go-grpc_out=./types --zrpc_out=.
-go run chat.go -f etc/chat-api.yaml
-
+go run user.go -f etc/user-api.yaml
+go run user.go -f etc/user-api.yaml
 goctl model mysql datasource -url="root:123456@tcp(127.0.0.1:3306)/gopan" -table="*"  -dir="./service/app/user/model"
 
 redis-cli --cluster create 43.139.195.17:6379 43.139.195.17:6380 43.139.195.17:6381 43.139.195.17:6382 43.139.195.17:6383 43.139.195.17:6384 --cluster-replicas 1

@@ -1,6 +1,9 @@
 package handler
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // 棋子
 type Piece byte
@@ -120,6 +123,7 @@ const W, D, S, A = 8, 1, -8, -1
 
 func (s State) Moves() (moves []Move) {
 	// 所以棋子可以走的步
+	fmt.Println("傻逼吧日")
 	directions := map[Piece][]Square{
 		'P': {W, W + W, W + A, W + D},
 		'N': {W + W + D, D + W + D, D + S + D, S + S + D, S + S + A, A + S + A, A + W + A, W + W + A},
@@ -135,31 +139,36 @@ func (s State) Moves() (moves []Move) {
 			continue
 		}
 		i := Square(k)
-
 		// 遍历该棋子可以移动的所有方向
 		for _, d := range directions[p] {
+
 			for j := i + d; ; j += d {
 				// 遇到空白或者己方棋子，跳出
 				q := s.board[j]
+
 				if q == ' ' || (q.me() && q != '.') {
 					break
 				}
+
 				// 检验兵的特殊情况
 				if p == 'P' {
 
 					if (d == W || d == W+W) && q != '.' {
 						break
 					}
+
 					// 双步起步，兵不在起始位置（即 i < A1+W），或者在兵的前进方向上存在障碍物
 					if d == W+W && (i < A1+W || s.board[i+W] != '.') {
 						break
 					}
+
 					// 兵左右上方没棋子，不是吃过路兵的位置，不是吃易位王的位置
 					if (d == W+A || d == W+D) && q == '.' && (j != s.ep && j != s.kp && j != s.kp-1 && j != s.kp+1) {
 						break
 					}
 				}
 				// 添加合法步
+				fmt.Println("开始添加和法步")
 				moves = append(moves, Move{from: i, to: j})
 				// 不能越过对方的棋子
 				if p == 'P' || p == 'N' || p == 'K' || (q != '.' && !q.me()) {
@@ -181,9 +190,11 @@ func (s State) Moves() (moves []Move) {
 				if i == H1 && s.board[j+A] == 'K' && s.bc[1] {
 					moves = append(moves, Move{from: j + A, to: j + D})
 				}
+
 			}
 		}
 	}
+	fmt.Println("这就是moves", moves)
 	return moves
 }
 
