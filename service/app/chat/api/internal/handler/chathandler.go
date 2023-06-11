@@ -111,7 +111,6 @@ func chatHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			err = errors.New("获取user_id错误")
 		}
 		client := &Client{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256)}
-
 		client.hub.register <- client
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.

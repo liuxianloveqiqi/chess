@@ -27,14 +27,14 @@ func (a Board) String() string {
 	s := ""
 	s += " -----------------\n"
 	for row := 0; row < 8; row++ {
-		s += string('a'+row) + "|"
+		s += string('1'+row) + "|"
 		for col := 0; col < 8; col++ {
 			s += " " + string(a[row*8+col])
 		}
 		s += " |\n"
 	}
 	s += " -----------------\n"
-	s += "   1 2 3 4 5 6 7 8\n"
+	s += "   a b c d e f g h\n"
 	return s
 }
 

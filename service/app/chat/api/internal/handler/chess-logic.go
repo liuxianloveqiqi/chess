@@ -1,6 +1,6 @@
 package handler
 
-func NewInitialBoard(isWhite bool) Board {
+func (c *GameClient) NewInitialBoard(isWhite bool) State {
 	board := Board{
 		'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
 		'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
@@ -13,8 +13,12 @@ func NewInitialBoard(isWhite bool) Board {
 	}
 
 	if !isWhite {
-		return board.Flip()
+		return State{
+			board: board.Flip(),
+		}
 	}
 
-	return board
+	return State{
+		board: board,
+	}
 }

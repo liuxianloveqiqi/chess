@@ -46,30 +46,29 @@ func (h *GameHub) Run() {
 	for {
 		select {
 		case client := <-h.register:
+
 			h.mutex.Lock()
 			// 检查是否已经有两位用户
 			if len(h.clients) == 2 {
 				// 如果已经有两位用户，则拒绝新用户连接
-				h.systemBroadcast <- []byte("系统：游戏房间已经满了，无法加入")
+				client.send <- []byte("房间已经满了，无法加入")
 				client.conn.Close()
+			} else if len(h.clients) == 1 && h.clients[client] {
+				fmt.Println("该用户已经加入")
 			} else {
 				// 否则将新用户添加到客户端列表中，并向其他用户发送通知
-				for c := range h.clients {
-					if c != client {
-						h.systemBroadcast <- []byte(fmt.Sprintf("系统：一个新用户加入了游戏房间: %v 号", h.id))
-						c.send <- []byte("系统：请输入 start 准备开始游戏")
-					}
-				}
 				h.clients[client] = true
+				client.send <- []byte(fmt.Sprintf("一个新用户 id= %v 加入了房间room: %v 号", client.id, h.id))
 				fmt.Println("客户端的数量为,", len(h.clients))
 			}
 			h.mutex.Unlock()
-
-		case systemMessage := <-h.systemBroadcast:
+		case message := <-h.systemBroadcast:
+			// 同理进行加锁
 			h.mutex.Lock()
 			for client := range h.clients {
 				select {
-				case client.send <- systemMessage:
+				case client.send <- message:
+
 				default:
 					close(client.send)
 					delete(h.clients, client)

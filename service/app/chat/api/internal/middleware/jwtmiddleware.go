@@ -28,7 +28,7 @@ func (m *JWTMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			w.Write(err)
 			return
 		}
-		fmt.Println(22222)
+
 		parts := strings.Split(authHeader, " ")
 		if !(len(parts) == 3 && parts[0] == "Bearer") {
 			w.WriteHeader(http.StatusBadRequest)

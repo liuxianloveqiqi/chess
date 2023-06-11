@@ -26,6 +26,8 @@ var GameHubs = make(map[int64]*GameHub)
 
 var bout int
 
+var state State
+
 // GameClient is a middleman between the websocket connection and the GameHub.
 type GameClient struct {
 	id  int64
@@ -71,7 +73,6 @@ func gameHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			err = errors.New("获取user_id错误")
 		}
 		client := &GameClient{id: userID.(int64), hub: hub, conn: conn, send: make(chan []byte, 256), isReady: false}
-
 		client.hub.register <- client
 		// 定黑白
 		bout = hub.WhiteOrBlack()
@@ -153,26 +154,30 @@ func (c *GameClient) readPump() {
 			}
 
 			c.mutex.Lock()
-
+			if !c.isReady && string(message) != "start" {
+				c.send <- []byte("系统：请输入start开始")
+			}
 			if string(message) == "start" {
 				c.isReady = true
 				if c.hub.areBothClientsReady() && !c.gameStarted {
 					// 判断黑白方
 					c.isWhite = (bout % 2) == 1
-					c.hub.systemBroadcast <- []byte("系统：游戏开始")
-					c.hub.systemBroadcast <- []byte(fmt.Sprintf("user id为%v的用户为%v", c.id, c.hub.stringWhiteOrBlack(c.isWhite)))
+					c.hub.systemBroadcast <- []byte("系统：游戏开始\n")
+					c.hub.systemBroadcast <- []byte(fmt.Sprintf("user id为%v的用户为%v\n", c.id, c.hub.stringWhiteOrBlack(c.isWhite)))
 					c.gameStarted = true
+					state = c.NewInitialBoard(c.isWhite)
+					c.hub.systemBroadcast <- []byte(state.board.String())
 				}
 			}
 
-			if !c.hub.areBothClientsReady() {
-				c.send <- []byte("系统：请输入start开始！")
+			if !c.hub.areBothClientsReady() && c.isReady {
+				c.send <- []byte("系统：请等待对方开始")
 			} else {
 				userMessage := []byte(fmt.Sprintf("userid = %d的用户操作：%s", c.id, string(message)))
 				c.hub.systemBroadcast <- userMessage
 
-				// 处理用户输入的消息并获取引擎的响应消息
-				input := c.processInput(message)
+				// 处理用户输入的消息并获取chess系统的响应消息
+				input := c.processInput(string(message))
 
 				// 将引擎的响应消息发送给客户端
 				c.send <- input
