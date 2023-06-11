@@ -153,7 +153,6 @@ func (c *GameClient) readPump() {
 				break
 			}
 
-			c.mutex.Lock()
 			if !c.isReady && string(message) != "start" {
 				c.send <- []byte("系统：请输入start开始")
 			}
