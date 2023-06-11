@@ -30,6 +30,7 @@ type Hub struct {
 	// 添加心跳检测
 	heartBeat *time.Ticker
 
+	systemBroadcast chan []byte
 	// 添加互斥锁锁
 	mutex sync.Mutex
 }
@@ -43,12 +44,11 @@ func NewHub(id int64) *Hub {
 		clients:    make(map[*Client]bool),
 	}
 }
-
 func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			fmt.Println("gsgsfxberebb")
+			h.mutex.Lock()
 			// 检查是否已经有两位用户
 			if len(h.clients) == 2 {
 				// 如果已经有两位用户，则拒绝新用户连接
@@ -56,17 +56,15 @@ func (h *Hub) Run() {
 				client.conn.Close()
 			} else {
 				// 否则将新用户添加到客户端列表中，并向其他用户发送通知
-				h.mutex.Lock()
 				h.clients[client] = true
-				h.mutex.Unlock()
 				for c := range h.clients {
 					if c != client {
-						c.hub.broadcast <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
+						c.send <- []byte(fmt.Sprintf("一个新用户加入了房间room: %v 号", h.id))
 					}
 				}
 				fmt.Println("客户端的数量为,", len(h.clients))
 			}
-
+			h.mutex.Unlock()
 		case message := <-h.broadcast:
 			// 同理进行加锁
 			h.mutex.Lock()
