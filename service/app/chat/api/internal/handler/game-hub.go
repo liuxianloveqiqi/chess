@@ -38,9 +38,8 @@ func NewGameHub(id int64) *GameHub {
 		id:              id,
 		systemBroadcast: make(chan []byte),
 		register:        make(chan *GameClient),
-
-		unregister: make(chan *GameClient),
-		clients:    make(map[*GameClient]bool),
+		unregister:      make(chan *GameClient),
+		clients:         make(map[*GameClient]bool),
 	}
 }
 func (h *GameHub) Run() {
@@ -55,13 +54,13 @@ func (h *GameHub) Run() {
 				client.conn.Close()
 			} else {
 				// 否则将新用户添加到客户端列表中，并向其他用户发送通知
-				h.clients[client] = true
 				for c := range h.clients {
 					if c != client {
 						h.systemBroadcast <- []byte(fmt.Sprintf("系统：一个新用户加入了游戏房间: %v 号", h.id))
-						h.systemBroadcast <- []byte("系统：请输入 start 准备开始游戏")
+						c.send <- []byte("系统：请输入 start 准备开始游戏")
 					}
 				}
+				h.clients[client] = true
 				fmt.Println("客户端的数量为,", len(h.clients))
 			}
 			h.mutex.Unlock()

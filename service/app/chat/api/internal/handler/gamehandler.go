@@ -187,31 +187,32 @@ func (c *GameClient) readPump() {
 }
 
 func (c *GameClient) writePump() {
-
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
 	}()
+
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.mutex.Lock()
+			c.mutex.Lock() // 加锁
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				c.mutex.Unlock() // 解锁
 				return
 			}
-			c.mutex.Unlock()
+
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
+				c.mutex.Unlock() // 解锁
 				return
 			}
-			// 对 send 进行写入时加锁
-			c.mutex.Lock()
+
 			w.Write(message)
-			c.mutex.Unlock()
+
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
 			for i := 0; i < n; i++ {
@@ -220,8 +221,11 @@ func (c *GameClient) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
+				c.mutex.Unlock() // 解锁
 				return
 			}
+			c.mutex.Unlock() // 解锁
+
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
@@ -230,6 +234,7 @@ func (c *GameClient) writePump() {
 		}
 	}
 }
+
 func (h *GameHub) areBothClientsReady() bool {
 	// 遍历所有客户端，检查是否都已准备好开始游戏
 
