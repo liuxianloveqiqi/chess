@@ -51,3 +51,4 @@ services:
     networks:
       - chess
     restart: always                      # 指定容器退出后的重启策略为始终重启
+

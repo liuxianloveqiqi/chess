@@ -17,5 +17,10 @@ RedisClient:
   Host: 43.139.195.17:6333
 # 腾讯云 SMS 配置
 Credential:
-  SecretId:
-  SecretKey:
+  SecretId: AKIDBdAaqyvskXEoNp8pQ3nOq6BFKOJ2VigR
+  SecretKey: jEUWm3RyX9ezCHE1fJuW5Ys2A6uZ5Pgp
+Telemetry:
+  Name: user.rpc
+  Endpoint: http://jaeger:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger

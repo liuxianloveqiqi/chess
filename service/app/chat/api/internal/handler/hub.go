@@ -48,7 +48,7 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.mutex.Lock()
+
 			// 检查是否已经有两位用户
 			if len(h.clients) == 2 {
 				// 如果已经有两位用户，则拒绝新用户连接
@@ -64,10 +64,8 @@ func (h *Hub) Run() {
 				}
 				fmt.Println("客户端的数量为,", len(h.clients))
 			}
-			h.mutex.Unlock()
+
 		case message := <-h.broadcast:
-			// 同理进行加锁
-			h.mutex.Lock()
 			for client := range h.clients {
 				select {
 				case client.send <- message:
@@ -77,7 +75,7 @@ func (h *Hub) Run() {
 					delete(h.clients, client)
 				}
 			}
-			h.mutex.Unlock()
+
 		}
 	}
 }

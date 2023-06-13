@@ -134,7 +134,6 @@ func (c *GameClient) readPump() {
 		select {
 		// 每10秒触发
 		case <-c.hub.heartBeat.C:
-			c.mutex.Lock() // 加锁
 			// 检测心跳，执行重连
 			err := c.conn.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
@@ -143,7 +142,6 @@ func (c *GameClient) readPump() {
 				c.mutex.Unlock() // 解锁
 				return
 			}
-			c.mutex.Unlock() // 解锁
 
 		default:
 			_, message, err := c.conn.ReadMessage()
@@ -163,7 +161,7 @@ func (c *GameClient) readPump() {
 
 					c.hub.systemBroadcast <- []byte("系统：游戏开始\n")
 					// 定黑白 1白0黑
-					c.hub.mutex.Lock()
+
 					for client, _ := range c.hub.clients {
 						client.isWhite = true
 						client.isBout = true
@@ -171,7 +169,7 @@ func (c *GameClient) readPump() {
 						break
 
 					}
-					c.hub.mutex.Unlock()
+
 					fmt.Println("现在的客户端的数量", len(c.hub.clients))
 					fmt.Println(c.hub.clients)
 					c.hub.systemBroadcast <- []byte(fmt.Sprintf("user id为%v的用户为%v\n", c.id, c.hub.stringWhiteOrBlack(c.isWhite)))
@@ -250,7 +248,6 @@ func (c *GameClient) writePump() {
 
 func (h *GameHub) areBothClientsReady() bool {
 	// 遍历所有客户端，检查是否都已准备好开始游戏
-
 	for client := range h.clients {
 		if !client.isReady || len(h.clients) < 2 {
 			return false

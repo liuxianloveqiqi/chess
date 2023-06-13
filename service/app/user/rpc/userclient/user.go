@@ -54,6 +54,7 @@ func (m *defaultUser) Register(ctx context.Context, in *RegisterReq, opts ...grp
 func (m *defaultUser) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*CommonResp, error) {
 	client := user.NewUserClient(m.cli.Conn())
 	return client.Login(ctx, in, opts...)
+
 }
 
 func (m *defaultUser) UserInfo(ctx context.Context, in *UserInfoReq, opts ...grpc.CallOption) (*UserList, error) {
