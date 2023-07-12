@@ -256,10 +256,6 @@ func (h *GameHub) areBothClientsReady() bool {
 	return true
 }
 
-func WhiteOrBlack() int {
-	return 89089353 % 2
-}
-
 func (h *GameHub) stringWhiteOrBlack(is bool) string {
 	return map[bool]string{true: "白方", false: "黑方"}[is]
 }

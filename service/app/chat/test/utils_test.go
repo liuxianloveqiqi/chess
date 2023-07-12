@@ -8,13 +8,10 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 )
-
-func TestMd5(t *testing.T) {
-	fmt.Println(utils.Md5Password("123456", "liuxian"))
-}
 
 var accessSecret = []byte("liuxian123")
 var refreshSecret = []byte("123456789")
@@ -188,4 +185,55 @@ func TestInitNsqProduct(t *testing.T) {
 		t.Errorf("无法连接到NSQ服务器")
 	}
 
+}
+func TestGeneratePassword(t *testing.T) {
+	length := 10
+	password := utils.GeneratePassword(length)
+
+	if len(password) != length {
+		t.Errorf("生成的密码长度不正确，期望长度：%d，实际长度：%d", length, len(password))
+	}
+
+	// 检查密码是否包含非法字符
+	charset := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+`-={}|[]\\:\";'<>,.?/"
+	for _, ch := range password {
+		if !strings.ContainsRune(charset, ch) {
+			t.Errorf("生成的密码包含非法字符：%c", ch)
+		}
+	}
+}
+
+func TestMd5(t *testing.T) {
+	password := "password"
+	expectedHash := "5f4dcc3b5aa765d61d8327deb882cf99"
+
+	hash := utils.Md5(password)
+
+	if hash != expectedHash {
+		t.Errorf("MD5 哈希值不正确，期望哈希值：%s，实际哈希值：%s", expectedHash, hash)
+	}
+}
+
+func TestMd5Password(t *testing.T) {
+	password := "password"
+	salt := "salt"
+	expectedHash := "f2e63fcbe67f9d75364a9e820a72e364"
+
+	hash := utils.Md5Password(password, salt)
+
+	if hash != expectedHash {
+		t.Errorf("加盐值 MD5 哈希值不正确，期望哈希值：%s，实际哈希值：%s", expectedHash, hash)
+	}
+}
+
+func TestValidMd5Password(t *testing.T) {
+	password := "password"
+	salt := "salt"
+	hash := utils.Md5Password(password, salt)
+
+	valid := utils.ValidMd5Password(password, salt, hash)
+
+	if !valid {
+		t.Error("解密密码不匹配")
+	}
 }

@@ -149,3 +149,115 @@ func TestReplaceSensitiveWords(t *testing.T) {
 		}
 	}
 }
+func TestAreBothClientsReady(t *testing.T) {
+	h := &GameHub{
+		clients: make(map[*GameClient]bool),
+	}
+
+	// 添加两个客户端，并设置一个客户端为未准备状态
+	client1 := &GameClient{isReady: true}
+	client2 := &GameClient{isReady: false}
+	h.clients[client1] = true
+	h.clients[client2] = true
+
+	ready := h.areBothClientsReady()
+
+	if ready {
+		t.Error("期望返回值为 false，实际为 true")
+	}
+
+	// 设置第二个客户端为准备状态
+	client2.isReady = true
+
+	ready = h.areBothClientsReady()
+
+	if !ready {
+		t.Error("期望返回值为 true，实际为 false")
+	}
+}
+
+func TestStringWhiteOrBlack(t *testing.T) {
+	white := true
+	black := false
+	h := &GameHub{
+		clients: make(map[*GameClient]bool),
+	}
+	whiteString := h.stringWhiteOrBlack(white)
+
+	if whiteString != "白方" {
+		t.Errorf("期望返回值为 \"白方\"，实际为 %s", whiteString)
+	}
+
+	blackString := h.stringWhiteOrBlack(black)
+
+	if blackString != "黑方" {
+		t.Errorf("期望返回值为 \"黑方\"，实际为 %s", blackString)
+	}
+}
+func TestRun(t *testing.T) {
+	hub := NewHub(1)
+
+	client1 := &Client{
+		conn: nil,
+		send: make(chan []byte),
+	}
+	client2 := &Client{
+		conn: nil,
+		send: make(chan []byte),
+	}
+
+	hub.register <- client1
+	hub.register <- client2
+
+	time.Sleep(time.Millisecond) // 等待 goroutine 执行注册操作
+
+	if len(hub.clients) != 2 {
+		t.Errorf("期望客户端数量为 2，实际为 %d", len(hub.clients))
+	}
+
+	message := []byte("Test message")
+	hub.broadcast <- message
+
+	time.Sleep(time.Millisecond) // 等待 goroutine 执行广播操作
+
+	for client := range hub.clients {
+		receivedMessage := <-client.send
+		if string(receivedMessage) != string(message) {
+			t.Errorf("期望接收到的消息为 \"%s\"，实际为 \"%s\"", string(message), string(receivedMessage))
+		}
+	}
+
+	// 模拟一个客户端断开连接
+	hub.unregister <- client1
+
+	time.Sleep(time.Millisecond) // 等待 goroutine 执行注销操作
+
+	if len(hub.clients) != 1 {
+		t.Errorf("期望客户端数量为 1，实际为 %d", len(hub.clients))
+	}
+}
+
+func TestNewHub(t *testing.T) {
+	id := int64(1)
+	hub := NewHub(id)
+
+	if hub.id != id {
+		t.Errorf("期望 Hub 的 id 为 %d，实际为 %d", id, hub.id)
+	}
+
+	if hub.broadcast == nil {
+		t.Error("Hub 的 broadcast 通道未初始化")
+	}
+
+	if hub.register == nil {
+		t.Error("Hub 的 register 通道未初始化")
+	}
+
+	if hub.unregister == nil {
+		t.Error("Hub 的 unregister 通道未初始化")
+	}
+
+	if hub.clients == nil {
+		t.Error("Hub 的 clients 列表未初始化")
+	}
+}
