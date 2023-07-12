@@ -30,7 +30,7 @@ func (a Board) String() string {
 	s := ""
 	s += " -----------------\n"
 	for row := 0; row < 8; row++ {
-		s += string('1'+row) + "|"
+		s += fmt.Sprintf("%c|", '1'+byte(row))
 		for col := 0; col < 8; col++ {
 			s += " " + string(a[row*8+col])
 		}
