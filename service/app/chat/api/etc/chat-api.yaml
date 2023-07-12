@@ -1,8 +1,3 @@
 Name: chat-api
 Host: 0.0.0.0
 Port: 4003
-Telemetry:
-  Name: chat.api
-  Endpoint: http://jaeger:14268/api/traces
-  Sampler: 1.0
-  Batcher: jaeger

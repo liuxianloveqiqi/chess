@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"math/rand"
 	"strings"
 	"testing"
@@ -236,4 +237,8 @@ func TestValidMd5Password(t *testing.T) {
 	if !valid {
 		t.Error("解密密码不匹配")
 	}
+}
+func TestJWT(t *testing.T) {
+	accessTokenString, refreshTokenString := utils.GetToken(2, uuid.New().String())
+	fmt.Println("Bearer " + accessTokenString + " " + refreshTokenString)
 }

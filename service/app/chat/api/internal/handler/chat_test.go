@@ -11,16 +11,17 @@ import (
 func TestWritePump(t *testing.T) {
 	// 创建 HTTP 请求头
 	header := http.Header{}
-	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODYyOTQwODgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiQVIifQ.Ayv8foFvRcH2zkWFZgOr6b1gDck5X_MrkrE-IItP8G4 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODg4ODU5MDgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiUlQifQ.ZG42StV1Sw07FM3vxNAg4wHJhBIioeZieEDR_Ey05ZY")
+	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2ODg3OTgzNzEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiQVIifQ.Ovx_cOjk-FqJ6T3jtY_LEsu4NFa-uy3O3nkNYGdekYI eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2OTEzOTAxOTEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiUlQifQ.keO4V1EIpYy75uLPCgyd8QlPgo3kuttt1RrlELRgebo")
 
 	// 构建 WebSocket 连接地址
-	url := "ws://localhost:4003/room/?roomId=1"
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
 
 	// 连接到 WebSocket
 	conn, _, err := websocket.DefaultDialer.Dial(url, header)
 	if err != nil {
-
+		recover()
 	}
+
 	defer conn.Close()
 
 	client := &Client{
@@ -68,7 +69,7 @@ func TestReadPump(t *testing.T) {
 	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODYyOTQwODgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiQVIifQ.Ayv8foFvRcH2zkWFZgOr6b1gDck5X_MrkrE-IItP8G4 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODg4ODU5MDgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiUlQifQ.ZG42StV1Sw07FM3vxNAg4wHJhBIioeZieEDR_Ey05ZY")
 
 	// 构建 WebSocket 连接地址
-	url := "ws://localhost:4003/room/?roomId=1"
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
 
 	// 连接到 WebSocket
 	conn, _, err := websocket.DefaultDialer.Dial(url, header)
@@ -105,9 +106,34 @@ func TestReadPump(t *testing.T) {
 	}
 }
 func TestContainsSensitiveWords(t *testing.T) {
-	client := &Client{
-		sensitiveWords: []string{"敏感词", "关键词"},
+	// 创建 HTTP 请求头
+	header := http.Header{}
+	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2ODg3OTgzNzEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiQVIifQ.Ovx_cOjk-FqJ6T3jtY_LEsu4NFa-uy3O3nkNYGdekYI eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2OTEzOTAxOTEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiUlQifQ.keO4V1EIpYy75uLPCgyd8QlPgo3kuttt1RrlELRgebo")
+
+	// 构建 WebSocket 连接地址
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
+
+	// 连接到 WebSocket
+	conn, _, err := websocket.DefaultDialer.Dial(url, header)
+	if err != nil {
+		recover()
 	}
+
+	defer conn.Close()
+
+	client := &Client{
+		id: 123,
+		hub: &Hub{
+			register:   make(chan *Client),
+			unregister: make(chan *Client),
+			clients:    make(map[*Client]bool),
+			broadcast:  make(chan []byte),
+			heartBeat:  time.NewTicker(heartBeatPeriod),
+		},
+		conn: conn,
+		send: make(chan []byte, 256),
+	}
+	client.hub.clients[client] = true
 
 	tests := []struct {
 		message       []byte
@@ -128,9 +154,34 @@ func TestContainsSensitiveWords(t *testing.T) {
 }
 
 func TestReplaceSensitiveWords(t *testing.T) {
-	client := &Client{
-		sensitiveWords: []string{"傻逼", "关键词"},
+	// 创建 HTTP 请求头
+	header := http.Header{}
+	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2ODg3OTgzNzEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiQVIifQ.Ovx_cOjk-FqJ6T3jtY_LEsu4NFa-uy3O3nkNYGdekYI eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2OTEzOTAxOTEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiUlQifQ.keO4V1EIpYy75uLPCgyd8QlPgo3kuttt1RrlELRgebo")
+
+	// 构建 WebSocket 连接地址
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
+
+	// 连接到 WebSocket
+	conn, _, err := websocket.DefaultDialer.Dial(url, header)
+	if err != nil {
+		recover()
 	}
+
+	defer conn.Close()
+
+	client := &Client{
+		id: 123,
+		hub: &Hub{
+			register:   make(chan *Client),
+			unregister: make(chan *Client),
+			clients:    make(map[*Client]bool),
+			broadcast:  make(chan []byte),
+			heartBeat:  time.NewTicker(heartBeatPeriod),
+		},
+		conn: conn,
+		send: make(chan []byte, 256),
+	}
+	client.hub.clients[client] = true
 
 	tests := []struct {
 		message       []byte
@@ -150,17 +201,42 @@ func TestReplaceSensitiveWords(t *testing.T) {
 	}
 }
 func TestAreBothClientsReady(t *testing.T) {
-	h := &GameHub{
-		clients: make(map[*GameClient]bool),
+	// 创建 HTTP 请求头
+	header := http.Header{}
+	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2ODg3OTgzNzEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiQVIifQ.Ovx_cOjk-FqJ6T3jtY_LEsu4NFa-uy3O3nkNYGdekYI eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NSwic3RhdGUiOiI4ZjcxNWQxNi1mOWJmLTQ2NzEtOTVjYy1mMWQ1ODg4ZDdhMmUiLCJleHAiOjE2OTEzOTAxOTEsImlhdCI6MTY4ODc5ODE5MSwiaXNzIjoiUlQifQ.keO4V1EIpYy75uLPCgyd8QlPgo3kuttt1RrlELRgebo")
+
+	// 构建 WebSocket 连接地址
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
+
+	// 连接到 WebSocket
+	conn, _, err := websocket.DefaultDialer.Dial(url, header)
+	if err != nil {
+		recover()
 	}
+
+	defer conn.Close()
+
+	client := &GameClient{
+		id: 123,
+		hub: &GameHub{
+			register:        make(chan *GameClient),
+			unregister:      make(chan *GameClient),
+			clients:         make(map[*GameClient]bool),
+			systemBroadcast: make(chan []byte),
+			heartBeat:       time.NewTicker(heartBeatPeriod),
+		},
+		conn: conn,
+		send: make(chan []byte, 256),
+	}
+	client.hub.clients[client] = true
 
 	// 添加两个客户端，并设置一个客户端为未准备状态
 	client1 := &GameClient{isReady: true}
 	client2 := &GameClient{isReady: false}
-	h.clients[client1] = true
-	h.clients[client2] = true
+	client.hub.clients[client1] = true
+	client.hub.clients[client2] = true
 
-	ready := h.areBothClientsReady()
+	ready := client.hub.areBothClientsReady()
 
 	if ready {
 		t.Error("期望返回值为 false，实际为 true")
@@ -169,7 +245,7 @@ func TestAreBothClientsReady(t *testing.T) {
 	// 设置第二个客户端为准备状态
 	client2.isReady = true
 
-	ready = h.areBothClientsReady()
+	ready = client.hub.areBothClientsReady()
 
 	if !ready {
 		t.Error("期望返回值为 true，实际为 false")
@@ -196,13 +272,25 @@ func TestStringWhiteOrBlack(t *testing.T) {
 }
 func TestRun(t *testing.T) {
 	hub := NewHub(1)
+	// 创建 HTTP 请求头
+	header := http.Header{}
+	header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODYyOTQwODgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiQVIifQ.Ayv8foFvRcH2zkWFZgOr6b1gDck5X_MrkrE-IItP8G4 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwic3RhdGUiOiJjYjk4MThkZi0xNGYwLTQ2ZWQtOTAzMi03N2MzYjFmZmMyMzAiLCJleHAiOjE2ODg4ODU5MDgsImlhdCI6MTY4NjI5MzkwOCwiaXNzIjoiUlQifQ.ZG42StV1Sw07FM3vxNAg4wHJhBIioeZieEDR_Ey05ZY")
 
+	// 构建 WebSocket 连接地址
+	url := "ws://43.139.195.17:4003/room/?roomId=1"
+
+	// 连接到 WebSocket
+	conn, _, err := websocket.DefaultDialer.Dial(url, header)
+	if err != nil {
+		t.Fatalf("无法连接到 WebSocket 服务器：%v", err)
+	}
+	defer conn.Close()
 	client1 := &Client{
-		conn: nil,
+		conn: conn,
 		send: make(chan []byte),
 	}
 	client2 := &Client{
-		conn: nil,
+		conn: conn,
 		send: make(chan []byte),
 	}
 
