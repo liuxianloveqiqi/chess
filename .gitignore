@@ -1,7 +1,7 @@
 /data/
 *.xml
 *.iml
-/service/*.yaml
+*.yaml
 # 忽略依赖包目录
 /vendor/
 
